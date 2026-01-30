@@ -1,0 +1,1274 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LS4YOU x Mission Locale – Template + Auto-évaluation</title>
+
+  <!-- Fonts: titres arrondis + texte moderne -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      /* Palette MLPB (strict) */
+      --orange:#f39200;
+      --vert:#95c11f;
+      --bleu:#2897d5;
+      --rose:#d60b52;
+      --violet:#a3195b;
+      --rouge:#9f3d3f;
+      --noir:#171718;
+      --blanc:#ffffff;
+
+      --bg: var(--blanc);
+      --text: var(--noir);
+
+      /* UI */
+      --card-radius: 24px;
+      --chip-radius: 999px;
+      --shadow: 0 16px 40px rgba(23,23,24,.10);
+      --shadow-soft: 0 10px 26px rgba(23,23,24,.08);
+      --ring: 0 0 0 3px rgba(40,151,213,.20);
+      --maxw: 1100px;
+    }
+
+    *{ box-sizing: border-box; }
+    body{
+      margin:0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Poppins", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      overflow-x:hidden;
+    }
+
+    /* Background deco: floating dots + puzzle-ish blobs (pure CSS) */
+    .deco {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      overflow:hidden;
+      z-index: 0;
+    }
+    .dot{
+      position:absolute;
+      width:14px;height:14px;border-radius:50%;
+      opacity:.85;
+      filter: drop-shadow(0 10px 20px rgba(23,23,24,.10));
+      animation: floaty 9s ease-in-out infinite;
+    }
+    @keyframes floaty{
+      0%,100%{ transform: translateY(0) translateX(0); }
+      50%{ transform: translateY(-14px) translateX(10px); }
+    }
+
+    .puzzle-blob{
+      position:absolute;
+      width:220px; height:220px;
+      border-radius: 44px;
+      opacity:.12;
+      transform: rotate(18deg);
+      filter: blur(.2px);
+    }
+    .puzzle-blob:before, .puzzle-blob:after{
+      content:"";
+      position:absolute;
+      width:64px; height:64px;
+      border-radius:50%;
+      opacity:.9;
+    }
+    .puzzle-blob:before{ top:-18px; left: calc(50% - 32px); }
+    .puzzle-blob:after{ bottom:-18px; right: calc(50% - 32px); }
+
+    /* Layout */
+    .app{
+      position:relative;
+      z-index: 1;
+      min-height: 100vh;
+    }
+
+    header{
+      position: sticky;
+      top:0;
+      z-index: 10;
+      backdrop-filter: blur(10px);
+      background: rgba(255,255,255,.78);
+      border-bottom: 1px solid rgba(23,23,24,.08);
+    }
+    .topbar{
+      max-width: var(--maxw);
+      margin: 0 auto;
+      padding: 12px 16px;
+      display:flex;
+      align-items:center;
+      gap: 12px;
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width: 240px;
+    }
+    .brand img{
+      height: 34px;
+      width:auto;
+      object-fit: contain;
+    }
+    .brand .tag{
+      font-size: 12px;
+      padding: 6px 10px;
+      border-radius: var(--chip-radius);
+      background: rgba(149,193,31,.14);
+      color: var(--noir);
+      white-space: nowrap;
+      border: 1px solid rgba(149,193,31,.30);
+    }
+
+    .nav{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      align-items:center;
+      justify-content:flex-end;
+      flex:1;
+    }
+
+    .nav button{
+      cursor:pointer;
+      border: 1px solid rgba(23,23,24,.10);
+      background: #fff;
+      color: var(--noir);
+      padding: 8px 12px;
+      border-radius: var(--chip-radius);
+      box-shadow: 0 6px 16px rgba(23,23,24,.06);
+      font-weight: 600;
+      font-size: 13px;
+    }
+    .nav button:hover{ box-shadow: 0 10px 22px rgba(23,23,24,.10); }
+    .nav button.active{
+      border-color: rgba(243,146,0,.50);
+      box-shadow: 0 0 0 3px rgba(243,146,0,.18);
+    }
+
+    main{
+      max-width: var(--maxw);
+      margin: 0 auto;
+      padding: 18px 16px 90px;
+    }
+
+    /* Slides / sections */
+    .slide{
+      display:none;
+      animation: fadeIn .25s ease-out;
+    }
+    .slide.active{ display:block; }
+    @keyframes fadeIn{
+      from{ opacity:0; transform: translateY(6px); }
+      to{ opacity:1; transform: translateY(0); }
+    }
+
+    /* Common components */
+    .card{
+      background:#fff;
+      border-radius: var(--card-radius);
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(23,23,24,.08);
+      overflow:hidden;
+    }
+    .card .inner{
+      padding: 22px;
+    }
+
+    .title{
+      font-family: "Fredoka", system-ui, sans-serif;
+      font-size: clamp(26px, 3.4vw, 46px);
+      line-height: 1.05;
+      margin: 0 0 10px;
+      color: var(--rouge);
+      letter-spacing: .2px;
+    }
+    .subtitle{
+      font-weight: 500;
+      font-size: 15px;
+      margin: 0 0 18px;
+      color: rgba(23,23,24,.88);
+      max-width: 70ch;
+    }
+    .kicker{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding: 8px 12px;
+      border-radius: var(--chip-radius);
+      background: rgba(40,151,213,.12);
+      border: 1px solid rgba(40,151,213,.26);
+      font-weight: 700;
+      font-size: 12px;
+      letter-spacing: .3px;
+      text-transform: uppercase;
+      color: var(--noir);
+      margin-bottom: 12px;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 18px;
+    }
+    @media(max-width: 880px){
+      .grid{ grid-template-columns: 1fr; }
+      .brand{ min-width: auto; }
+    }
+
+    .pill-row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top: 14px;
+    }
+    .pill{
+      padding: 8px 12px;
+      border-radius: var(--chip-radius);
+      border: 1px solid rgba(23,23,24,.10);
+      background: #fff;
+      font-weight: 600;
+      font-size: 13px;
+    }
+    .pill.orange{ border-color: rgba(243,146,0,.45); box-shadow: 0 0 0 3px rgba(243,146,0,.14); }
+    .pill.vert{ border-color: rgba(149,193,31,.45); box-shadow: 0 0 0 3px rgba(149,193,31,.14); }
+    .pill.bleu{ border-color: rgba(40,151,213,.45); box-shadow: 0 0 0 3px rgba(40,151,213,.14); }
+    .pill.rose{ border-color: rgba(214,11,82,.45); box-shadow: 0 0 0 3px rgba(214,11,82,.12); }
+    .pill.violet{ border-color: rgba(163,25,91,.45); box-shadow: 0 0 0 3px rgba(163,25,91,.12); }
+    .pill.rouge{ border-color: rgba(159,61,63,.45); box-shadow: 0 0 0 3px rgba(159,61,63,.12); }
+
+    /* Hero with circles + portrait */
+    .hero{
+      position:relative;
+      padding: 28px 22px 18px;
+      min-height: 420px;
+    }
+    .hero-bg{
+      position:absolute;
+      inset:0;
+      background:
+        radial-gradient(circle at 12% 30%, rgba(243,146,0,.18) 0 120px, transparent 121px),
+        radial-gradient(circle at 78% 20%, rgba(40,151,213,.18) 0 130px, transparent 131px),
+        radial-gradient(circle at 86% 72%, rgba(149,193,31,.16) 0 150px, transparent 151px),
+        radial-gradient(circle at 18% 84%, rgba(214,11,82,.14) 0 140px, transparent 141px);
+    }
+    .hero .content{
+      position:relative;
+      z-index:1;
+      display:grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 18px;
+      align-items: center;
+    }
+    @media(max-width: 880px){
+      .hero .content{ grid-template-columns: 1fr; }
+      .hero{ min-height: auto; }
+    }
+    .portrait-wrap{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding: 10px;
+    }
+    .portrait-ring{
+      width: 260px; height: 260px;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 30% 30%, rgba(255,255,255,.60), rgba(255,255,255,.0) 60%),
+        linear-gradient(135deg, rgba(243,146,0,.95), rgba(40,151,213,.95));
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      box-shadow: var(--shadow);
+      border: 10px solid rgba(255,255,255,.85);
+    }
+    .portrait{
+      width: 210px; height: 210px;
+      border-radius: 50%;
+      background: #fff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+      border: 8px solid rgba(149,193,31,.55);
+    }
+    .portrait img{
+      width:100%;
+      height:100%;
+      object-fit: cover;
+    }
+    .portrait-placeholder{
+      width:100%; height:100%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight: 700;
+      color: rgba(23,23,24,.60);
+      background: radial-gradient(circle at 40% 40%, rgba(40,151,213,.14), rgba(243,146,0,.10));
+      text-align:center;
+      padding: 18px;
+      font-size: 14px;
+    }
+
+    /* Bottom multicolor capsule frieze */
+    .frieze{
+      display:flex;
+      gap:10px;
+      padding: 14px 22px 18px;
+      flex-wrap:wrap;
+      position:relative;
+      z-index:1;
+    }
+    .cap{
+      height: 12px;
+      min-width: 54px;
+      border-radius: var(--chip-radius);
+      opacity:.95;
+      box-shadow: 0 10px 16px rgba(23,23,24,.08);
+    }
+    .cap.orange{ background: var(--orange); }
+    .cap.vert{ background: var(--vert); }
+    .cap.bleu{ background: var(--bleu); }
+    .cap.rose{ background: var(--rose); }
+    .cap.violet{ background: var(--violet); }
+    .cap.rouge{ background: var(--rouge); }
+    .cap.noir{ background: var(--noir); }
+
+    /* Chapter page */
+    .chapter{
+      display:grid;
+      grid-template-columns: .8fr 1.2fr;
+      gap: 18px;
+      align-items: stretch;
+    }
+    @media(max-width: 880px){
+      .chapter{ grid-template-columns: 1fr; }
+    }
+    .big-number{
+      font-family: "Fredoka", system-ui, sans-serif;
+      font-size: 84px;
+      line-height: 1;
+      margin: 0;
+      color: var(--orange);
+      text-shadow: 0 14px 30px rgba(23,23,24,.12);
+    }
+    .chapter-card{
+      border-radius: var(--card-radius);
+      background: linear-gradient(135deg, rgba(243,146,0,.18), rgba(214,11,82,.12));
+      border: 1px solid rgba(23,23,24,.08);
+      box-shadow: var(--shadow-soft);
+      padding: 22px;
+      position:relative;
+      overflow:hidden;
+    }
+    .chapter-card .puz{
+      position:absolute;
+      right: -22px;
+      top: -18px;
+      width: 140px;
+      height: 140px;
+      border-radius: 34px;
+      background: rgba(40,151,213,.18);
+      transform: rotate(14deg);
+    }
+    .chapter-card .puz:before,
+    .chapter-card .puz:after{
+      content:"";
+      position:absolute;
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      background: rgba(40,151,213,.35);
+    }
+    .chapter-card .puz:before{ top:-14px; left: calc(50% - 22px); }
+    .chapter-card .puz:after{ bottom:-14px; right: calc(50% - 22px); }
+
+    /* Process 3 steps */
+    .steps{
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+    @media(max-width: 880px){
+      .steps{ grid-template-columns: 1fr; }
+    }
+    .step{
+      border-radius: 22px;
+      background:#fff;
+      border: 1px solid rgba(23,23,24,.08);
+      box-shadow: var(--shadow-soft);
+      padding: 16px;
+      position:relative;
+      overflow:hidden;
+    }
+    .step .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding: 8px 10px;
+      border-radius: var(--chip-radius);
+      font-weight: 800;
+      font-size: 12px;
+      margin-bottom: 10px;
+      border: 1px solid rgba(23,23,24,.10);
+    }
+    .badge.orange{ background: rgba(243,146,0,.14); border-color: rgba(243,146,0,.28); }
+    .badge.bleu{ background: rgba(40,151,213,.14); border-color: rgba(40,151,213,.28); }
+    .badge.vert{ background: rgba(149,193,31,.14); border-color: rgba(149,193,31,.28); }
+    .step h3{
+      margin: 0 0 6px;
+      font-family: "Fredoka", system-ui, sans-serif;
+      font-size: 20px;
+      color: var(--noir);
+    }
+    .step p{
+      margin: 0;
+      font-size: 14px;
+      color: rgba(23,23,24,.82);
+    }
+
+    /* Timeline */
+    .timeline{
+      display:flex;
+      flex-direction:column;
+      gap: 12px;
+    }
+    .tl-item{
+      display:grid;
+      grid-template-columns: 120px 1fr;
+      gap: 12px;
+      align-items:flex-start;
+      padding: 14px;
+      border-radius: 18px;
+      background:#fff;
+      border: 1px solid rgba(23,23,24,.08);
+      box-shadow: var(--shadow-soft);
+    }
+    @media(max-width: 700px){
+      .tl-item{ grid-template-columns: 1fr; }
+    }
+    .tl-time{
+      font-weight: 800;
+      color: var(--rouge);
+      font-size: 13px;
+      display:inline-flex;
+      padding: 8px 10px;
+      border-radius: var(--chip-radius);
+      background: rgba(159,61,63,.10);
+      border: 1px solid rgba(159,61,63,.22);
+      width: fit-content;
+    }
+
+    /* Practical activity sheet */
+    .checklist{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    @media(max-width: 880px){
+      .checklist{ grid-template-columns: 1fr; }
+    }
+    .box{
+      border-radius: 18px;
+      background: #fff;
+      border: 1px solid rgba(23,23,24,.08);
+      box-shadow: var(--shadow-soft);
+      padding: 16px;
+    }
+    .box h4{
+      margin:0 0 8px;
+      font-family:"Fredoka", system-ui, sans-serif;
+      color: var(--violet);
+      font-size: 18px;
+    }
+    ul.clean{
+      margin:0;
+      padding-left: 18px;
+      color: rgba(23,23,24,.85);
+      font-size: 14px;
+    }
+
+    /* Skills with pictos (CSS circles) */
+    .skills{
+      display:grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 10px;
+    }
+    @media(max-width: 980px){
+      .skills{ grid-template-columns: repeat(3, 1fr); }
+    }
+    @media(max-width: 520px){
+      .skills{ grid-template-columns: repeat(2, 1fr); }
+    }
+    .skill{
+      border-radius: 18px;
+      background:#fff;
+      border: 1px solid rgba(23,23,24,.08);
+      box-shadow: var(--shadow-soft);
+      padding: 14px;
+      display:flex;
+      gap: 10px;
+      align-items:center;
+    }
+    .ico{
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      flex: 0 0 auto;
+      box-shadow: 0 10px 16px rgba(23,23,24,.10);
+    }
+    .ico.orange{ background: var(--orange); }
+    .ico.vert{ background: var(--vert); }
+    .ico.bleu{ background: var(--bleu); }
+    .ico.rose{ background: var(--rose); }
+    .ico.violet{ background: var(--violet); }
+    .ico.rouge{ background: var(--rouge); }
+
+    .skill .name{
+      font-weight: 800;
+      font-size: 13px;
+      line-height: 1.1;
+    }
+
+    /* Quotes */
+    blockquote{
+      margin:0;
+      padding: 18px 18px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, rgba(40,151,213,.10), rgba(149,193,31,.10));
+      border: 1px solid rgba(23,23,24,.08);
+      box-shadow: var(--shadow-soft);
+      font-size: 16px;
+      color: rgba(23,23,24,.90);
+    }
+    blockquote footer{
+      margin-top: 10px;
+      font-size: 13px;
+      color: rgba(23,23,24,.70);
+      font-weight: 600;
+    }
+
+    /* Auto-eval interactive */
+    .eval{
+      display:grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 14px;
+      align-items:start;
+    }
+    @media(max-width: 880px){
+      .eval{ grid-template-columns: 1fr; }
+    }
+
+    .qcard{
+      border-radius: 18px;
+      border: 1px solid rgba(23,23,24,.08);
+      background:#fff;
+      box-shadow: var(--shadow-soft);
+      padding: 14px;
+      margin-bottom: 12px;
+    }
+    .qtitle{
+      font-weight: 800;
+      margin: 0 0 10px;
+      color: var(--noir);
+      font-size: 14px;
+    }
+    .choices{
+      display:flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .choice{
+      cursor:pointer;
+      user-select:none;
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
+      padding: 10px 12px;
+      border-radius: var(--chip-radius);
+      border: 1px solid rgba(23,23,24,.12);
+      background: #fff;
+      font-weight: 700;
+      font-size: 13px;
+      transition: transform .05s ease, box-shadow .15s ease;
+    }
+    .choice:active{ transform: scale(.99); }
+    .choice[data-v="0"]{ border-color: rgba(159,61,63,.26); }
+    .choice[data-v="1"]{ border-color: rgba(40,151,213,.26); }
+    .choice[data-v="2"]{ border-color: rgba(149,193,31,.30); }
+
+    .choice.selected[data-v="0"]{ box-shadow: 0 0 0 3px rgba(159,61,63,.16); }
+    .choice.selected[data-v="1"]{ box-shadow: 0 0 0 3px rgba(40,151,213,.18); }
+    .choice.selected[data-v="2"]{ box-shadow: 0 0 0 3px rgba(149,193,31,.18); }
+
+    .textarea{
+      width: 100%;
+      min-height: 92px;
+      resize: vertical;
+      padding: 12px 12px;
+      border-radius: 16px;
+      border: 1px solid rgba(23,23,24,.12);
+      outline:none;
+      font-family: inherit;
+      font-size: 14px;
+    }
+    .textarea:focus{ box-shadow: var(--ring); }
+
+    .panel{
+      position: sticky;
+      top: 78px;
+    }
+    .scoreBox{
+      border-radius: 22px;
+      padding: 16px;
+      background: linear-gradient(135deg, rgba(243,146,0,.14), rgba(214,11,82,.10), rgba(40,151,213,.10));
+      border: 1px solid rgba(23,23,24,.08);
+      box-shadow: var(--shadow-soft);
+    }
+    .scoreNum{
+      font-family: "Fredoka", system-ui, sans-serif;
+      font-size: 44px;
+      margin: 0;
+      color: var(--rouge);
+      line-height: 1;
+    }
+    .scoreMeta{
+      margin: 6px 0 0;
+      font-size: 13px;
+      color: rgba(23,23,24,.78);
+      font-weight: 600;
+    }
+    .btn{
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      border:none;
+      padding: 12px 14px;
+      border-radius: var(--chip-radius);
+      font-weight: 800;
+      color: #fff;
+      background: var(--bleu);
+      box-shadow: 0 12px 22px rgba(23,23,24,.10);
+      margin-top: 12px;
+      width: 100%;
+    }
+    .btn.secondary{
+      background: #fff;
+      color: var(--noir);
+      border: 1px solid rgba(23,23,24,.12);
+      box-shadow: 0 10px 18px rgba(23,23,24,.07);
+    }
+    .hint{
+      margin-top: 10px;
+      font-size: 12px;
+      color: rgba(23,23,24,.70);
+    }
+
+    /* Footer note */
+    .footer-note{
+      margin-top: 18px;
+      font-size: 12px;
+      color: rgba(23,23,24,.60);
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Decorative layer -->
+  <div class="deco" aria-hidden="true">
+    <!-- floating dots (MLPB colors only) -->
+    <div class="dot" style="background:var(--vert); left:6%; top:14%; animation-delay:.2s;"></div>
+    <div class="dot" style="background:var(--rose); left:12%; top:68%; animation-delay:1.1s;"></div>
+    <div class="dot" style="background:var(--bleu); left:82%; top:16%; animation-delay:.6s;"></div>
+    <div class="dot" style="background:var(--orange); left:90%; top:60%; animation-delay:1.4s;"></div>
+    <div class="dot" style="background:var(--violet); left:46%; top:10%; animation-delay:.9s;"></div>
+    <div class="dot" style="background:var(--rouge); left:52%; top:78%; animation-delay:1.8s;"></div>
+
+    <!-- puzzle-ish blobs -->
+    <div class="puzzle-blob" style="background:var(--bleu); left:-70px; top:120px;">
+      <style>
+        /* scoped pseudo colors (kept in palette) */
+      </style>
+    </div>
+    <div class="puzzle-blob" style="background:var(--orange); right:-80px; top:260px;"></div>
+    <div class="puzzle-blob" style="background:var(--vert); left:12%; bottom:-90px;"></div>
+
+    <script>
+      // Colorize pseudo-elements of blobs (kept in palette)
+      // (applied once DOM is ready)
+      document.addEventListener("DOMContentLoaded", () => {
+        const blobs = document.querySelectorAll(".puzzle-blob");
+        const colors = ["var(--bleu)","var(--orange)","var(--vert)","var(--rose)","var(--violet)","var(--rouge)"];
+        blobs.forEach((b, idx) => {
+          const c = colors[idx % colors.length];
+          b.style.setProperty("--blobc", c);
+          // pseudo colors via inline style injection per element
+          // (simpler: set background of pseudo by cloning with CSS variables not supported in pseudo here)
+        });
+      });
+    </script>
+  </div>
+
+  <div class="app">
+    <header>
+      <div class="topbar">
+        <div class="brand">
+          <img
+            src="https://www.lifeskills4youth.eu/wp-content/uploads/2024/07/LS4YOU_Logo.png"
+            alt="LS4YOU Logo"
+          />
+          <span class="tag">x Mission Locale Pays Basque</span>
+        </div>
+
+        <nav class="nav" aria-label="Navigation modèles">
+          <button class="active" data-slide="cover">1. Couverture</button>
+          <button data-slide="chapter">2. Chapitre</button>
+          <button data-slide="textVisual">3. Texte + visuel</button>
+          <button data-slide="process">4. Process (3 étapes)</button>
+          <button data-slide="timeline">5. Timeline</button>
+          <button data-slide="activity">6. Fiche activité</button>
+          <button data-slide="skills">7. Compétences</button>
+          <button data-slide="quotes">8. Citations</button>
+          <button data-slide="conclusion">9. Conclusion</button>
+          <button data-slide="tools">10. Outils</button>
+          <button data-slide="eval">Auto-éval interactive</button>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <!-- 1) COVER -->
+      <section class="slide active" id="cover">
+        <div class="card hero">
+          <div class="hero-bg"></div>
+          <div class="content">
+            <div>
+              <div class="kicker">Life Skills for Youth – LS4YOU</div>
+              <h1 class="title">Connaître mon territoire</h1>
+              <p class="subtitle">
+                Un format jeune, positif, participatif : on cartographie le territoire tel qu’il est vécu,
+                on repère des ressources utiles, et on se projette sans pression.
+              </p>
+
+              <div class="pill-row">
+                <span class="pill orange">Atelier participatif</span>
+                <span class="pill bleu">NEET</span>
+                <span class="pill vert">Ressources locales</span>
+                <span class="pill rose">Engagement & citoyenneté</span>
+                <span class="pill violet">Mobilité / partir-revenir</span>
+                <span class="pill rouge">Projection</span>
+              </div>
+            </div>
+
+            <div class="portrait-wrap">
+              <div class="portrait-ring">
+                <div class="portrait" title="Remplace l’image par une photo de jeune (portrait rond)">
+                  <!-- Placeholder: tu peux remplacer par <img src="ton-fichier.jpg"> -->
+                  <div class="portrait-placeholder">
+                    Photo de jeune<br>(cercle)<br><span style="font-weight:600; font-size:12px;">Diversité / inclusion</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- frise inférieure multi-couleurs -->
+          <div class="frieze" aria-hidden="true">
+            <div class="cap orange"></div><div class="cap bleu"></div><div class="cap vert"></div>
+            <div class="cap rose"></div><div class="cap violet"></div><div class="cap rouge"></div>
+            <div class="cap noir" style="opacity:.92;"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2) CHAPTER -->
+      <section class="slide" id="chapter">
+        <div class="chapter">
+          <div class="card">
+            <div class="inner">
+              <p class="big-number">01</p>
+              <p class="subtitle" style="margin-top:10px;">
+                Chapitre / module d’entrée : “Le territoire tel que je le vis”.
+              </p>
+              <div class="pill-row">
+                <span class="pill bleu">Carte</span>
+                <span class="pill vert">Ressources</span>
+                <span class="pill orange">Acteurs</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="chapter-card">
+            <div class="puz" aria-hidden="true"></div>
+            <div class="kicker">Objectif</div>
+            <h2 class="title" style="font-size:34px; margin-bottom:8px;">Faire un portrait du territoire</h2>
+            <p class="subtitle" style="margin-bottom:0;">
+              On transforme la connaissance “informelle” en compétence :
+              mettre des mots, repérer, comparer, décider.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3) TEXT + VISUAL -->
+      <section class="slide" id="textVisual">
+        <div class="grid">
+          <div class="card">
+            <div class="inner">
+              <div class="kicker">Slide texte + visuel</div>
+              <h2 class="title" style="font-size:36px;">À quoi ressemble mon territoire ?</h2>
+              <p class="subtitle">
+                On matérialise sur une carte : <b>acteurs</b>, <b>dispositifs</b>, <b>ressources</b>, <b>équipements</b>.
+                Le vécu des jeunes est la base : pas besoin d’être “bon” en géographie.
+              </p>
+              <div class="checklist">
+                <div class="box">
+                  <h4>Ce qu’on fait</h4>
+                  <ul class="clean">
+                    <li>On place des “îlots” sur la carte</li>
+                    <li>On partage nos bons plans / zones floues</li>
+                    <li>On repère ce qui aide / ce qui bloque</li>
+                  </ul>
+                </div>
+                <div class="box">
+                  <h4>Life Skills</h4>
+                  <ul class="clean">
+                    <li>Conscience de soi</li>
+                    <li>Communication</li>
+                    <li>Coopération</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="inner">
+              <div class="kicker">Visuel rond</div>
+              <div class="portrait-wrap" style="padding: 8px 0;">
+                <div class="portrait-ring" style="background: linear-gradient(135deg, rgba(149,193,31,.95), rgba(214,11,82,.95));">
+                  <div class="portrait" style="border-color: rgba(40,151,213,.55);">
+                    <div class="portrait-placeholder">
+                      Photo / visuel<br>“territoire”<br><span style="font-weight:600; font-size:12px;">(rond + aplats MLPB)</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <p class="footer-note">Astuce : remplace le placeholder par une photo détourée en cercle.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4) PROCESS -->
+      <section class="slide" id="process">
+        <div class="card">
+          <div class="inner">
+            <div class="kicker">Processus</div>
+            <h2 class="title" style="font-size:38px;">Identifier – Mesurer – Mettre en œuvre</h2>
+            <p class="subtitle">Un déroulé clair, rassurant, qui transforme l’atelier en compétence mobilisable.</p>
+
+            <div class="steps">
+              <div class="step">
+                <div class="badge orange">1 • Identifier</div>
+                <h3>Je repère</h3>
+                <p>Je mets des mots sur mon territoire et j’identifie des ressources utiles.</p>
+              </div>
+              <div class="step">
+                <div class="badge bleu">2 • Mesurer</div>
+                <h3>Je me situe</h3>
+                <p>Je me positionne sur la compétence via l’auto-évaluation (0/1/2).</p>
+              </div>
+              <div class="step">
+                <div class="badge vert">3 • Mettre en œuvre</div>
+                <h3>Je teste</h3>
+                <p>Je choisis une action simple : info, rendez-vous, lieu à explorer, aide à demander.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="frieze" aria-hidden="true">
+            <div class="cap bleu"></div><div class="cap orange"></div><div class="cap vert"></div>
+            <div class="cap rose"></div><div class="cap violet"></div><div class="cap rouge"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 5) TIMELINE -->
+      <section class="slide" id="timeline">
+        <div class="card">
+          <div class="inner">
+            <div class="kicker">Schéma / timeline</div>
+            <h2 class="title" style="font-size:38px;">Déroulé (2h)</h2>
+            <p class="subtitle">Version “formation / séminaire” : lisible et duplicable.</p>
+
+            <div class="timeline">
+              <div class="tl-item">
+                <div class="tl-time">0:00 → 0:10</div>
+                <div>
+                  <b>Cadre & sécurité</b><br>
+                  “Ce n’est pas un test. Votre vécu compte.”
+                </div>
+              </div>
+              <div class="tl-item">
+                <div class="tl-time">0:10 → 0:55</div>
+                <div>
+                  <b>Carte : portrait du territoire</b><br>
+                  Îlots : acteurs / dispositifs / ressources / équipements.
+                </div>
+              </div>
+              <div class="tl-item">
+                <div class="tl-time">0:55 → 1:55</div>
+                <div>
+                  <b>Investir : rester / partir / revenir</b><br>
+                  3 situations : nourrir / quitter / y vivre et en vivre.
+                </div>
+              </div>
+              <div class="tl-item">
+                <div class="tl-time">1:55 → 2:10</div>
+                <div>
+                  <b>Auto-évaluation</b><br>
+                  Score + 1 phrase “ce que je retiens”.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 6) PRACTICAL ACTIVITY -->
+      <section class="slide" id="activity">
+        <div class="card">
+          <div class="inner">
+            <div class="kicker">Fiche pratique / activité</div>
+            <h2 class="title" style="font-size:38px;">Fiche animateur – essentiel</h2>
+            <p class="subtitle">Matériel, consignes, vigilance, et sortie pédagogique.</p>
+
+            <div class="checklist">
+              <div class="box">
+                <h4>Matériel</h4>
+                <ul class="clean">
+                  <li>Carte A1 du territoire</li>
+                  <li>Post-its 4 couleurs</li>
+                  <li>Feutres + gommettes</li>
+                  <li>Auto-évaluation (papier ou numérique)</li>
+                </ul>
+              </div>
+              <div class="box">
+                <h4>Vigilances NEET</h4>
+                <ul class="clean">
+                  <li>Pas de correction / pas d’évaluation</li>
+                  <li>Accepter “je sais pas”</li>
+                  <li>Valoriser le vécu (même informel)</li>
+                  <li>Projection sans injonction</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="pill-row" style="margin-top:16px;">
+              <span class="pill orange">Expression</span>
+              <span class="pill bleu">Repérage</span>
+              <span class="pill vert">Autonomie</span>
+              <span class="pill rose">Engagement</span>
+              <span class="pill violet">Mobilité</span>
+              <span class="pill rouge">Décision</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 7) SKILLS -->
+      <section class="slide" id="skills">
+        <div class="card">
+          <div class="inner">
+            <div class="kicker">Compétences</div>
+            <h2 class="title" style="font-size:38px;">Life Skills mobilisées</h2>
+            <p class="subtitle">Version “pictos colorés” (pastilles MLPB) pour rendre visible l’acquis.</p>
+
+            <div class="skills">
+              <div class="skill"><span class="ico rouge"></span><div class="name">Conscience<br>de soi</div></div>
+              <div class="skill"><span class="ico bleu"></span><div class="name">Communication</div></div>
+              <div class="skill"><span class="ico orange"></span><div class="name">Prise<br>de décision</div></div>
+              <div class="skill"><span class="ico vert"></span><div class="name">Autonomie</div></div>
+              <div class="skill"><span class="ico violet"></span><div class="name">Coopération</div></div>
+              <div class="skill"><span class="ico rose"></span><div class="name">Bien-être</div></div>
+            </div>
+          </div>
+
+          <div class="frieze" aria-hidden="true">
+            <div class="cap vert"></div><div class="cap rose"></div><div class="cap bleu"></div>
+            <div class="cap orange"></div><div class="cap violet"></div><div class="cap rouge"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 8) QUOTES -->
+      <section class="slide" id="quotes">
+        <div class="card">
+          <div class="inner">
+            <div class="kicker">Citations</div>
+            <h2 class="title" style="font-size:38px;">Ce que disent les jeunes</h2>
+            <p class="subtitle">À utiliser pour rendre l’atelier vivant (et Erasmus-friendly).</p>
+
+            <div style="display:grid; gap:12px;">
+              <blockquote>
+                “Je pensais que je ne connaissais rien… en fait je connais plein de trucs, juste je ne savais pas que ça comptait.”
+                <footer>— Participant·e</footer>
+              </blockquote>
+              <blockquote>
+                “Partir n’est pas forcément fuir. Ça peut être une stratégie.”
+                <footer>— Participant·e</footer>
+              </blockquote>
+              <blockquote>
+                “Quand on met tout sur la carte, on voit qu’il y a des options.”
+                <footer>— Participant·e</footer>
+              </blockquote>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 9) CONCLUSION / INFOS -->
+      <section class="slide" id="conclusion">
+        <div class="card">
+          <div class="inner">
+            <div class="kicker">Conclusion / infos pratiques</div>
+            <h2 class="title" style="font-size:38px;">Et après ?</h2>
+            <p class="subtitle">
+              On transforme la carte + l’auto-évaluation en prochaines étapes simples, sans pression.
+            </p>
+
+            <div class="checklist">
+              <div class="box">
+                <h4>Sortie pédagogique</h4>
+                <ul class="clean">
+                  <li>1 ressource à explorer</li>
+                  <li>1 personne / lieu à contacter</li>
+                  <li>1 action simple (info, RDV, visite)</li>
+                </ul>
+              </div>
+              <div class="box">
+                <h4>Message clé</h4>
+                <ul class="clean">
+                  <li>Ton rythme compte</li>
+                  <li>Ton vécu a de la valeur</li>
+                  <li>Tu peux avancer par petites étapes</li>
+                </ul>
+              </div>
+            </div>
+
+            <p class="footer-note">
+              Tu peux remplacer cette slide par : QR code inscription / contacts / planning “Flashmob” / etc.
+            </p>
+          </div>
+
+          <div class="frieze" aria-hidden="true">
+            <div class="cap noir"></div><div class="cap orange"></div><div class="cap bleu"></div>
+            <div class="cap vert"></div><div class="cap rose"></div><div class="cap violet"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 10) TOOLS -->
+      <section class="slide" id="tools">
+        <div class="card">
+          <div class="inner">
+            <div class="kicker">Outils & ressources</div>
+            <h2 class="title" style="font-size:38px;">Boîte à outils</h2>
+            <p class="subtitle">À compléter selon ton écosystème MLPB (liens, supports, QR codes).</p>
+
+            <div class="checklist">
+              <div class="box">
+                <h4>Ressources</h4>
+                <ul class="clean">
+                  <li>Cartographie locale (PDF / image)</li>
+                  <li>Liens dispositifs jeunesse</li>
+                  <li>Annuaire structures partenaires</li>
+                </ul>
+              </div>
+              <div class="box">
+                <h4>Supports</h4>
+                <ul class="clean">
+                  <li>Fiche atelier (animateur)</li>
+                  <li>Auto-évaluation (papier + web)</li>
+                  <li>Trace LS4YOU (portfolio / note)</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Auto-evaluation interactive -->
+      <section class="slide" id="eval">
+        <div class="card">
+          <div class="inner">
+            <div class="kicker">Auto-évaluation interactive</div>
+            <h2 class="title" style="font-size:38px;">Connaître mon territoire</h2>
+            <p class="subtitle">
+              Clique sur <b>Non (0)</b>, <b>Parfois (1)</b> ou <b>Souvent (2)</b>. Aucun jugement : ça sert à te situer.
+            </p>
+
+            <div class="eval">
+              <div>
+                <div id="evalQuestions"></div>
+
+                <div class="qcard">
+                  <p class="qtitle">Exemple vécu (facultatif)</p>
+                  <textarea class="textarea" id="exampleText" placeholder="Un exemple, un lieu, une situation… (optionnel)"></textarea>
+                </div>
+              </div>
+
+              <div class="panel">
+                <div class="scoreBox">
+                  <p class="scoreNum" id="scoreNum">—</p>
+                  <p class="scoreMeta" id="scoreMeta">Réponds aux items puis “Calculer”.</p>
+
+                  <button class="btn" id="btnCalc">Calculer</button>
+                  <button class="btn secondary" id="btnReset">Réinitialiser</button>
+
+                  <p class="hint">
+                    Barème : 8 questions × 0/1/2 = <b>/16</b><br>
+                    (Si tu veux /32, duplique les questions ou passe à 16 items.)
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <p class="footer-note">
+              Intégration LS4YOU : cet écran peut être un module “Mesurer” après l’atelier carto.
+            </p>
+          </div>
+
+          <div class="frieze" aria-hidden="true">
+            <div class="cap vert"></div><div class="cap bleu"></div><div class="cap orange"></div>
+            <div class="cap rose"></div><div class="cap violet"></div><div class="cap rouge"></div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    // NAV between slides
+    const navButtons = Array.from(document.querySelectorAll(".nav button"));
+    const slides = Array.from(document.querySelectorAll(".slide"));
+
+    function showSlide(id){
+      slides.forEach(s => s.classList.toggle("active", s.id === id));
+      navButtons.forEach(b => b.classList.toggle("active", b.dataset.slide === id));
+      // keep scroll top for a slide-like feel
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+    navButtons.forEach(btn => btn.addEventListener("click", () => showSlide(btn.dataset.slide)));
+
+    // AUTO-EVAL interactive (MLPB styling)
+    const questions = [
+      "Je sais expliquer mon territoire avec mes mots",
+      "Je peux dire ce que j’aime / je n’aime pas dans mon territoire",
+      "Je connais au moins une ressource utile pour les jeunes",
+      "Je sais où trouver de l’aide localement",
+      "Je comprends pourquoi certains jeunes restent ici",
+      "Je comprends pourquoi certains jeunes partent",
+      "Je peux imaginer une situation possible pour moi (rester/partir/revenir)",
+      "Je me sens libre d’avancer à mon rythme"
+    ];
+
+    const evalRoot = document.getElementById("evalQuestions");
+    const answers = new Array(questions.length).fill(null);
+
+    function renderEval(){
+      evalRoot.innerHTML = "";
+      questions.forEach((q, idx) => {
+        const wrap = document.createElement("div");
+        wrap.className = "qcard";
+
+        const title = document.createElement("p");
+        title.className = "qtitle";
+        title.textContent = q;
+
+        const choices = document.createElement("div");
+        choices.className = "choices";
+
+        const opts = [
+          { label:"Non", v:0 },
+          { label:"Parfois", v:1 },
+          { label:"Souvent", v:2 }
+        ];
+
+        opts.forEach(opt => {
+          const chip = document.createElement("div");
+          chip.className = "choice" + (answers[idx] === opt.v ? " selected" : "");
+          chip.dataset.v = String(opt.v);
+          chip.textContent = `${opt.label} (${opt.v})`;
+          chip.addEventListener("click", () => {
+            answers[idx] = opt.v;
+            // re-render only this question
+            renderEval();
+          });
+          choices.appendChild(chip);
+        });
+
+        wrap.appendChild(title);
+        wrap.appendChild(choices);
+        evalRoot.appendChild(wrap);
+      });
+    }
+
+    function computeScore(){
+      let score = 0;
+      let filled = 0;
+      answers.forEach(v => {
+        if (v !== null){ score += v; filled++; }
+      });
+
+      const scoreNum = document.getElementById("scoreNum");
+      const scoreMeta = document.getElementById("scoreMeta");
+
+      scoreNum.textContent = `${score}/16`;
+
+      if (filled < questions.length){
+        scoreMeta.textContent = `Il manque ${questions.length - filled} réponse(s). Tu peux quand même te situer.`;
+        return;
+      }
+
+      let msg = "";
+      if (score <= 5){
+        msg = "Début : tu découvres ton territoire. C’est un point de départ normal.";
+      } else if (score <= 11){
+        msg = "En construction : tu as déjà des repères, tu peux les renforcer.";
+      } else {
+        msg = "Solide : tu as une bonne lecture de ton territoire et des options possibles.";
+      }
+      scoreMeta.textContent = msg;
+    }
+
+    function resetEval(){
+      for (let i=0;i<answers.length;i++) answers[i] = null;
+      document.getElementById("exampleText").value = "";
+      document.getElementById("scoreNum").textContent = "—";
+      document.getElementById("scoreMeta").textContent = "Réponds aux items puis “Calculer”.";
+      renderEval();
+    }
+
+    document.getElementById("btnCalc").addEventListener("click", computeScore);
+    document.getElementById("btnReset").addEventListener("click", resetEval);
+
+    renderEval();
+  </script>
+</body>
+</html>
+
+  document.getElementById("resultat").innerHTML =
+    `Score : ${score}/16<br>${message}`;
+}
+</script>
+
+</body>
+</html>
